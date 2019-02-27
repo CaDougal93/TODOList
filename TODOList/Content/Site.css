@@ -1,0 +1,9 @@
+﻿body{
+background-color:gainsboro;
+}
+
+#todoList {
+    position:absolute;
+    left:35%;
+    border:ridge;
+}

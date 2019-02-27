@@ -1,0 +1,99 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+@model TODOList.Models.ViewModels.TODOViewModel
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>TODO List</title>
+    <script src="~/Scripts/vue.min.js"></script>
+    <link rel="stylesheet" href="~/Content/Site.css">
+</head>
+<body>
+    <div id="todoList">
+        <table id="todoTable">
+            <caption>
+                <form id="todoForm">
+                    <input id="todoItemName" type="text" placeholder="New TODO" />
+                    <input type="button" value="Save" v-on:click="add()" />
+                </form>
+            </caption>
+            <tr v-for="item in todoItems">
+                <td><input type="text" v-model="item.TODOItemName" /></td>
+                <td><input type="checkbox" v-on:change="complete(item.TODOItemID, item.IsComplete)" v-model="item.IsComplete" /></td>
+                <td><button v-on:click="remove(item.TODOItemID)">Delete</button></td>
+                <td><button v-on:click="update(item.TODOItemID, item.TODOItemName)">Update</button></td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>
+
+<script>
+
+    new Vue({
+        el: '#todoList',
+        data: {
+            todoItems: []
+        },
+        mounted () {
+            this.loadTodoList();
+        },
+        methods: {
+            loadTodoList() {
+                setTimeout(() => {
+                    this.todoItems = JSON.parse('@Html.Raw(Model.TODOJSON)')
+                }, 300)
+            },
+            complete: function (itemID, isComplete) {
+                var tmpObj = {
+                    id: itemID,
+                    isComplete: isComplete
+                };
+
+                var req = new XMLHttpRequest();
+                req.open('POST', '@Url.Action("Complete", "Home")', true);
+                req.setRequestHeader('Content-Type', 'application/json');
+                req.send(JSON.stringify(tmpObj));
+            },
+            remove: function (itemID) {
+
+                var tmpObj = {
+                    id: itemID
+                };
+
+                var req = new XMLHttpRequest();
+                req.open('POST', '@Url.Action("Delete", "Home")', true);
+                req.setRequestHeader('Content-Type', 'application/json');
+                req.send(JSON.stringify(tmpObj));
+
+            },
+            update: function (itemID, item) {
+                var tmpObj = {
+                    id: itemID,
+                    todoItemName: item
+                };
+
+                var req = new XMLHttpRequest();
+                req.open('POST', '@Url.Action("Update", "Home")', true);
+                req.setRequestHeader('Content-Type', 'application/json');
+                req.send(JSON.stringify(tmpObj));
+            },
+            add: function () {
+                var tmpObj = {
+                    todoItemName: document.getElementById("todoItemName").value
+                }
+
+                event.preventDefault();
+                var req = new XMLHttpRequest();
+                req.open('POST', '@Url.Action("Add", "Home")', true);
+                req.setRequestHeader('Content-Type', 'application/json');
+                req.send(JSON.stringify(tmpObj));
+            }
+        }
+    })
+
+</script>
