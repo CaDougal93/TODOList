@@ -1,9 +1,33 @@
 ﻿body {
-background-color:gainsboro;
+    background-color:gainsboro;
+    width:100%;
+}
+
+#app {
+    position: absolute;
+    width: 100%;
+    left: 35%;
+}
+
+#todoForm{
+    position: absolute;
+    left: 10%;
 }
 
 #todoList {
     position:absolute;
-    left:35%;
-    border:ridge;
+    left: 6%;
+    list-style-type: none;
+    top: 20px;
+}
+
+li input {
+    border:none;
+    background-color:gainsboro;
+}
+
+li button {
+    padding: 5px;
+    border: none;
+    background: none;
 }

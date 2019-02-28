@@ -11,56 +11,75 @@
     <title>TODO List</title>
     <script src="~/Scripts/vue.min.js"></script>
     <link rel="stylesheet" href="~/Content/Site.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body>
-    <div id="todoList">
-        <table id="todoTable">
-            <caption>
-                <form id="todoForm">
-                    <input id="todoItemName" type="text" placeholder="New TODO" />
-                    <input type="button" value="Save" v-on:click="add()" />
-                </form>
-            </caption>
-            <tr v-for="item in todoItems">
-                <td><input type="text" v-model="item.TODOItemName" /></td>
-                <td><input type="checkbox" v-on:change="complete(item.TODOItemID, item.IsComplete)" v-model="item.IsComplete" /></td>
-                <td><button v-on:click="remove(item.TODOItemID)">Delete</button></td>
-                <td><button v-on:click="update(item.TODOItemID, item.TODOItemName)">Update</button></td>
-            </tr>
-        </table>
+    <div id="app">
+        <form id="todoForm">
+            <input id="todoItemName" type="text" placeholder="New TODO" />
+            <input type="button" value="Add" v-on:click="add()" />
+        </form>
+        <ul id="todoList">
+            <li v-for="(item, index) in todoItems" key="item.id" v-bind:id="item.ID">
+                <input type="text" v-model="item.TODOItemName" v-bind:id="item.TODOItemID" />
+                <button class="fa fa-check" v-on:click="complete(item.TODOItemID, item.IsComplete, index)" v-model="item.IsComplete"/>
+                <button class="fa fa-trash" v-on:click="remove(item.TODOItemID, index)" />
+                <button class="fa fa-save" v-on:click="update(item.TODOItemID, item.TODOItemName)" />
+            </li>
+        </ul>
     </div>
 </body>
 </html>
 
 <script>
 
-    new Vue({
-        el: '#todoList',
+    var vm = new Vue({
+        el: '#app',
         data: {
             todoItems: []
         },
         mounted () {
             this.loadTodoList();
         },
+        updated ()
+        {
+            vm.todoItems.forEach(function(element) {
+                if (element.IsComplete) {
+                    document.getElementById(element.TODOItemID).style.textDecoration = "line-through";
+                }
+            });
+        },
         methods: {
             loadTodoList() {
                 setTimeout(() => {
-                    this.todoItems = JSON.parse('@Html.Raw(Model.TODOJSON)')
+                    this.todoItems = @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.TODOList)));
                 }, 300)
             },
-            complete: function (itemID, isComplete) {
+            complete: function (itemID, isComplete, index) {
                 var tmpObj = {
                     id: itemID,
-                    isComplete: isComplete
+                    isComplete: !isComplete
                 };
+
+                if (tmpObj.isComplete) {
+                    document.getElementById(itemID).style.textDecoration = "line-through";
+                }
+                else {
+                    document.getElementById(itemID).style.textDecoration = "initial";
+                }
 
                 var req = new XMLHttpRequest();
                 req.open('POST', '@Url.Action("Complete", "Home")', true);
                 req.setRequestHeader('Content-Type', 'application/json');
                 req.send(JSON.stringify(tmpObj));
-            },
-            remove: function (itemID) {
 
+                var item = this.todoItems.find(x => x.TODOItemID == itemID);
+                if (item) {
+                    item.IsComplete = !item.IsComplete;
+                    Vue.set(vm.todoItems, index, item);
+                }
+            },
+            remove: function (itemID, index) {
                 var tmpObj = {
                     id: itemID
                 };
@@ -70,6 +89,7 @@
                 req.setRequestHeader('Content-Type', 'application/json');
                 req.send(JSON.stringify(tmpObj));
 
+                this.$delete(this.todoItems, index);
             },
             update: function (itemID, item) {
                 var tmpObj = {
@@ -89,6 +109,13 @@
 
                 event.preventDefault();
                 var req = new XMLHttpRequest();
+                req.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        vm.todoItems.push(JSON.parse(this.responseText));
+                        document.getElementById("todoItemName").value = "";
+                    }
+                };
+
                 req.open('POST', '@Url.Action("Add", "Home")', true);
                 req.setRequestHeader('Content-Type', 'application/json');
                 req.send(JSON.stringify(tmpObj));
