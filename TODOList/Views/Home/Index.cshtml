@@ -107,12 +107,12 @@
                     todoItemName: document.getElementById("todoItemName").value
                 }
 
+                document.getElementById("todoItemName").value = "";
                 event.preventDefault();
                 var req = new XMLHttpRequest();
                 req.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
                         vm.todoItems.push(JSON.parse(this.responseText));
-                        document.getElementById("todoItemName").value = "";
                     }
                 };
 

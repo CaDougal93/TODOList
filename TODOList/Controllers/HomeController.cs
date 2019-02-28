@@ -36,8 +36,11 @@ namespace TODOList.Controllers
         {
             using (var context = new TODOItemContext())
             {
-                context.TODOItems.Where(x => x.TODOItemID == id && x.TODOItemName != todoItemName).FirstOrDefault().TODOItemName = todoItemName;
-                context.SaveChanges();
+                if (context.TODOItems.Where(x => x.TODOItemID == id && x.TODOItemName != todoItemName).Any())
+                {
+                    context.TODOItems.Where(x => x.TODOItemID == id).FirstOrDefault().TODOItemName = todoItemName;
+                    context.SaveChanges();
+                }
             }
         }
 
@@ -45,8 +48,11 @@ namespace TODOList.Controllers
         {
             using (var context = new TODOItemContext())
             {
-                context.TODOItems.Where(x => x.TODOItemID == id).FirstOrDefault().IsComplete = isComplete;
-                context.SaveChanges();
+                if (context.TODOItems.Where(x => x.TODOItemID == id && x.IsComplete != isComplete).Any())
+                {
+                    context.TODOItems.Where(x => x.TODOItemID == id).FirstOrDefault().IsComplete = isComplete;
+                    context.SaveChanges();
+                }
             }
         }
 
